@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phonebook App</title>
+<style>
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #89f7fe, #66a6ff);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 500px;
+  }
+
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 15px;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+
+  button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+
+  .menu button {
+    width: 48%;
+    margin: 1%;
+  }
+
+  .contact-list {
+    margin-top: 15px;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+  }
+
+  .contact-card {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .contact-card span {
+    font-size: 14px;
+  }
+
+  .delete-btn {
+    background-color: #ff4d4d;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  .delete-btn:hover {
+    background-color: #d63031;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>📞 Phonebook App</h2>
+
+  <input type="text" id="name" placeholder="Enter Name">
+  <input type="text" id="phone" placeholder="Enter 10-digit Phone Number">
+  
+  <div class="menu">
+    <button onclick="addContact()">Add Contact</button>
+    <button onclick="updateContact()">Update Contact</button>
+  </div>
+
+  <input type="text" id="search" placeholder="Search by Name" oninput="searchContact()">
+
+  <div class="contact-list" id="contactList"></div>
+</div>
+
+<script>
+  let contacts = JSON.parse(localStorage.getItem("contacts")) || {};
+
+  function saveContacts() {
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+  }
+
+  function validateNumber(num) {
+    if (!/^\d{10}$/.test(num)) {
+      alert("Please enter a valid 10-digit phone number!");
+      return false;
+    }
+    return "+91_" + num;
+  }
+
+  function addContact() {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (!name || !phone) {
+      alert("Please fill all fields!");
+      return;
+    }
+
+    const validated = validateNumber(phone);
+    if (!validated) return;
+
+    contacts[name] = validated;
+    saveContacts();
+    displayContacts();
+    clearInputs();
+    alert("Contact added successfully!");
+  }
+
+  function updateContact() {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (!contacts[name]) {
+      alert("Contact not found!");
+      return;
+    }
+
+    const validated = validateNumber(phone);
+    if (!validated) return;
+
+    contacts[name] = validated;
+    saveContacts();
+    displayContacts();
+    clearInputs();
+    alert("Contact updated!");
+  }
+
+  function deleteContact(name) {
+    if (confirm(`Delete ${name}?`)) {
+      delete contacts[name];
+      saveContacts();
+      displayContacts();
+    }
+  }
+
+  function searchContact() {
+    const query = document.getElementById("search").value.toLowerCase();
+    const filtered = Object.keys(contacts)
+      .filter(name => name.toLowerCase().includes(query))
+      .reduce((obj, key) => {
+        obj[key] = contacts[key];
+        return obj;
+      }, {});
+    displayContacts(filtered);
+  }
+
+  function displayContacts(list = contacts) {
+    const container = document.getElementById("contactList");
+    container.innerHTML = "";
+
+    if (Object.keys(list).length === 0) {
+      container.innerHTML = "<p>No contacts found.</p>";
+      return;
+    }
+
+    for (let name in list) {
+      const div = document.createElement("div");
+      div.className = "contact-card";
+      div.innerHTML = `
+        <span><b>${name}</b><br>${list[name]}</span>
+        <button class="delete-btn" onclick="deleteContact('${name}')">Delete</button>
+      `;
+      container.appendChild(div);
+    }
+  }
+
+  function clearInputs() {
+    document.getElementById("name").value = "";
+    document.getElementById("phone").value = "";
+  }
+
+  displayContacts();
+</script>
+
+</body>
+</html>
